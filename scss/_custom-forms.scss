@@ -51,9 +51,7 @@
     @include box-shadow($custom-control-indicator-active-box-shadow);
   }
 
-  // Use disabled attribute instead of :disabled pseudo-class
-  // Workaround for: https://developer.microsoft.com/en-us/microsoft-edge/platform/issues/11295231
-  &[disabled] {
+  &:disabled {
     ~ .custom-control-label {
       color: $custom-control-label-disabled-color;
 
@@ -71,7 +69,6 @@
 .custom-control-label {
   position: relative;
   margin-bottom: 0;
-  color: $custom-control-label-color;
   vertical-align: top;
 
   // Background-color and (when enabled) gradient
@@ -310,10 +307,18 @@
     box-shadow: $custom-file-focus-box-shadow;
   }
 
-  // Use disabled attribute instead of :disabled pseudo-class
-  // Workaround for: https://developer.microsoft.com/en-us/microsoft-edge/platform/issues/11295231
-  &[disabled] ~ .custom-file-label {
+  &:disabled ~ .custom-file-label {
     background-color: $custom-file-disabled-bg;
+  }
+
+  @each $lang, $value in $custom-file-text {
+    &:lang(#{$lang}) ~ .custom-file-label::after {
+      content: $value;
+    }
+  }
+
+  ~ .custom-file-label[data-browse]::after {
+    content: attr(data-browse);
   }
 }
 
@@ -323,43 +328,33 @@
   right: 0;
   left: 0;
   z-index: 1;
-  display: flex;
   height: $custom-file-height;
-  border-color: $custom-file-border-color;
-  @include border-radius($custom-file-border-radius);
-  @include box-shadow($custom-file-box-shadow);
-}
-
-.custom-file-text {
-  display: block;
-  flex-grow: 1;
   padding: $custom-file-padding-y $custom-file-padding-x;
-  overflow: hidden;
   font-family: $custom-file-font-family;
   font-weight: $custom-file-font-weight;
   line-height: $custom-file-line-height;
   color: $custom-file-color;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   background-color: $custom-file-bg;
-  border-color: inherit;
-  border-style: solid;
-  border-width: $custom-file-border-width;
-  @include border-left-radius(inherit);
-}
+  border: $custom-file-border-width solid $custom-file-border-color;
+  @include border-radius($custom-file-border-radius);
+  @include box-shadow($custom-file-box-shadow);
 
-.custom-file-button {
-  display: block;
-  flex-shrink: 0;
-  padding: $custom-file-padding-y $custom-file-padding-x;
-  margin-left: -$custom-file-border-width;
-  line-height: $custom-file-line-height;
-  color: $custom-file-button-color;
-  @include gradient-bg($custom-file-button-bg);
-  border-color: inherit;
-  border-style: solid;
-  border-width: $custom-file-border-width;
-  @include border-right-radius(inherit);
+  &::after {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 3;
+    display: block;
+    height: $custom-file-height-inner;
+    padding: $custom-file-padding-y $custom-file-padding-x;
+    line-height: $custom-file-line-height;
+    color: $custom-file-button-color;
+    content: "Browse";
+    @include gradient-bg($custom-file-button-bg);
+    border-left: inherit;
+    @include border-radius(0 $custom-file-border-radius $custom-file-border-radius 0);
+  }
 }
 
 // Range
@@ -367,6 +362,30 @@
 // Style range inputs the same across browsers. Vendor-specific rules for pseudo
 // elements cannot be mixed. As such, there are no shared styles for focus or
 // active states on prefixed selectors.
+%range-thumb {
+	width: $custom-range-thumb-width;
+	height: $custom-range-thumb-height;
+	@include gradient-bg($custom-range-thumb-bg);
+	border: $custom-range-thumb-border;
+	@include border-radius($custom-range-thumb-border-radius);
+	@include box-shadow($custom-range-thumb-box-shadow);
+	@include transition($custom-forms-transition);
+	appearance: none;
+	
+	&:active {
+      @include gradient-bg($custom-range-thumb-active-bg);
+    }
+}
+
+%range-track {
+	width: $custom-range-track-width;
+  height: $custom-range-track-height;
+  color: transparent;
+  cursor: $custom-range-track-cursor;
+	background-color: $custom-range-track-bg;
+  border-color: transparent;
+	@include box-shadow($custom-range-track-box-shadow);
+}
 
 .custom-range {
   width: 100%;
@@ -390,85 +409,34 @@
   }
 
   &::-webkit-slider-thumb {
-    width: $custom-range-thumb-width;
-    height: $custom-range-thumb-height;
+    @extend %range-thumb;
     margin-top: ($custom-range-track-height - $custom-range-thumb-height) / 2; // Webkit specific
-    @include gradient-bg($custom-range-thumb-bg);
-    border: $custom-range-thumb-border;
-    @include border-radius($custom-range-thumb-border-radius);
-    @include box-shadow($custom-range-thumb-box-shadow);
-    @include transition($custom-forms-transition);
-    appearance: none;
-
-    &:active {
-      @include gradient-bg($custom-range-thumb-active-bg);
-    }
   }
 
   &::-webkit-slider-runnable-track {
-    width: $custom-range-track-width;
-    height: $custom-range-track-height;
-    color: transparent; // Why?
-    cursor: $custom-range-track-cursor;
-    background-color: $custom-range-track-bg;
-    border-color: transparent;
+    @extend %range-track;
     @include border-radius($custom-range-track-border-radius);
-    @include box-shadow($custom-range-track-box-shadow);
   }
 
   &::-moz-range-thumb {
-    width: $custom-range-thumb-width;
-    height: $custom-range-thumb-height;
-    @include gradient-bg($custom-range-thumb-bg);
-    border: $custom-range-thumb-border;
-    @include border-radius($custom-range-thumb-border-radius);
-    @include box-shadow($custom-range-thumb-box-shadow);
-    @include transition($custom-forms-transition);
-    appearance: none;
-
-    &:active {
-      @include gradient-bg($custom-range-thumb-active-bg);
-    }
+    @extend %range-thumb;
   }
 
   &::-moz-range-track {
-    width: $custom-range-track-width;
-    height: $custom-range-track-height;
-    color: transparent;
-    cursor: $custom-range-track-cursor;
-    background-color: $custom-range-track-bg;
-    border-color: transparent; // Firefox specific?
+    @extend %range-track;
     @include border-radius($custom-range-track-border-radius);
-    @include box-shadow($custom-range-track-box-shadow);
   }
 
   &::-ms-thumb {
-    width: $custom-range-thumb-width;
-    height: $custom-range-thumb-height;
     margin-top: 0; // Edge specific
     margin-right: $custom-range-thumb-focus-box-shadow-width; // Workaround that overflowed box-shadow is hidden.
     margin-left: $custom-range-thumb-focus-box-shadow-width;  // Workaround that overflowed box-shadow is hidden.
-    @include gradient-bg($custom-range-thumb-bg);
-    border: $custom-range-thumb-border;
-    @include border-radius($custom-range-thumb-border-radius);
-    @include box-shadow($custom-range-thumb-box-shadow);
-    @include transition($custom-forms-transition);
-    appearance: none;
-
-    &:active {
-      @include gradient-bg($custom-range-thumb-active-bg);
-    }
+    @extend %range-thumb;
   }
 
   &::-ms-track {
-    width: $custom-range-track-width;
-    height: $custom-range-track-height;
-    color: transparent;
-    cursor: $custom-range-track-cursor;
-    background-color: transparent;
-    border-color: transparent;
+    @extend %range-track;
     border-width: $custom-range-thumb-height / 2;
-    @include box-shadow($custom-range-track-box-shadow);
   }
 
   &::-ms-fill-lower {
@@ -507,8 +475,6 @@
 
 .custom-control-label::before,
 .custom-file-label,
-.custom-file-text,
-.custom-file-button,
 .custom-select {
   @include transition($custom-forms-transition);
 }
